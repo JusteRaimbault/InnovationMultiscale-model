@@ -1,9 +1,44 @@
 package innovationmultiscale
 
-case class MacroUrbanEvolution()
+import innovationmultiscale.Matrix.MatrixImplementation
+
+import scala.util.Random
+
+/**
+ * synthetic only -> no pop matrix
+ * @param populationMatrix
+ * @param distanceMatrix
+ * @param dates
+ * @param rng
+ * @param growthRate
+ * @param innovationWeight
+ * @param gravityDecay
+ * @param innovationDecay
+ * @param newInnovation
+ * @param initialInnovationUtility
+ */
+case class MacroUrbanEvolution(syntheticCities: Int,
+                               syntheticHierarchy: Double,
+                               syntheticMaxPop: Double,
+                               distanceMatrix: Matrix,
+                               finalTime: Int,
+                               rng : Random,
+                               growthRate: Double,
+                               innovationWeight: Double,
+                               gravityDecay: Double,
+                               innovationDecay: Double,
+                               newInnovation: (Seq[Double],Seq[Double],Seq[Seq[Double]]) => (Boolean,Seq[Double],Seq[Seq[Double]]),
+                               initialInnovationUtility: Double)
 
 
 object MacroUrbanEvolution {
+
+
+  sealed trait InnovationUtilityDistribution
+  case class InnovationUtilityNormalDistribution() extends InnovationUtilityDistribution
+  case class InnovationUtilityLogNormalDistribution() extends InnovationUtilityDistribution
+
+
 
   /**
    * Synthetic setup for mutation model
@@ -56,7 +91,7 @@ object MacroUrbanEvolution {
 
     }
 
-    UrbanEvolution(populationMatrix,dmat,dates,rng,growthRate,innovationWeight,gravityDecay,innovationDecay,
+    MacroUrbanEvolution(populationMatrix,dmat,dates,rng,growthRate,innovationWeight,gravityDecay,innovationDecay,
       mutationInnovation(_,_,_, mutationRate, newInnovationHierarchy, earlyAdoptersRate, utilityStd, distrib),
       1.0
     )
