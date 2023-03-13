@@ -33,17 +33,25 @@ object RunModel extends App {
     mesoCurrentProductShare = 0.5,
     mesoInteractionProba = 0.00001,
     mesoDistanceDecay = 100.0,
-    mesoToMacroInnovationThreshold = 1.0
+    mesoToMacroInnovationThreshold = 1.0,
+    macroToMesoCrossoverMaxUpdate = 0.01,
+    macroToMesoMutationMaxUpdate = 0.001,
+    macroToMesoExchangeMaxUpdate =  -0.00001
   )
 
   val result = model.run
 
+  //println(s"Macro utilities = ${result.macroUtilities.toSeq}")
   println(s"Macro utility = ${result.averageMacroUtility}")
+  //println(s"Macro diversities = ${result.macroDiversities.toSeq}")
   println(s"Macro diversity = ${result.averageMacroDiversity}")
   println(s"Macro innovation = ${result.averageMacroInnovation}")
   println(s"Meso diversity = ${result.averageMesoProductDiversity}")
   println(s"Meso fitness = ${result.averageMesoBestFitness}")
 
+  //println(result.macroUtilities.length)
+  //println(result.mesoTimeSeries.length)
+  //println(result.mesoTimeSeries.map(_.length).toSeq)
   println(s"Psi (utility) = ${Statistics.psiWithStd(result.mesoTimeSeries,result.macroUtilities)(rng)}")
   println(s"Delta (utility) = ${Statistics.deltaWithStd(result.mesoTimeSeries,result.macroUtilities)(rng)}")
   println(s"Gamma (utility) = ${Statistics.gammaWithStd(result.mesoTimeSeries,result.macroUtilities)(rng)}")

@@ -53,9 +53,10 @@ object Statistics {
    * @param Y
    * @return
    */
-  def mutualInformation(X: Array[Double], Y: Array[Double]): Double = {
+  def mutualInformation(X: Seq[Double], Y: Seq[Double]): Double = {
+    //println(s"I: |X|=${X.length}, |Y|=${Y.length}")
     val calculator = new MutualInfoCalculatorMultiVariateKraskov1()
-    calculator.setObservations(X,Y)
+    calculator.setObservations(X.toArray,Y.toArray)
     calculator.computeAverageLocalOfObservations()
   }
 
@@ -66,23 +67,29 @@ object Statistics {
    * @param tau
    * @return
    */
-  def psi(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
+  def psi(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1): Double = {
+    //println(s"psi for X: ${X.length} ; ${X.map(_.length).toSeq} ; V: ${V.size}")
     val v = V.dropRight(tau)
     val vlagged = V.drop(tau)
-    mutualInformation(v, vlagged) - X.map(mutualInformation(_,vlagged)).sum
+    //println(mutualInformation(v, vlagged))
+    mutualInformation(v, vlagged) - X.map{
+      xj =>
+        val xjlagged = xj.dropRight(tau)
+        mutualInformation(xjlagged,vlagged)
+    }.sum
   }
 
-  def measureBootstrapped(f: (Array[Array[Double]], Array[Double], Int) => Double, X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double) = {
+  def measureBootstrapped(f: (Seq[Seq[Double]], Seq[Double], Int) => Double, X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double) = {
     val res = f(X,V,tau)
     val sampler = new RandomDataGenerator()
     sampler.reSeed(rng.nextLong())
     val sigma = std((1 to nbootstraps).map{_ =>
-      f(X.map(xj => sampler.nextSample(xj.toSeq.asJavaCollection, xj.length).asInstanceOf[Array[Double]]),sampler.nextSample(V.toSeq.asJavaCollection, V.length).asInstanceOf[Array[Double]],tau)
+      f(X.map(xj => sampler.nextSample(xj.toSeq.asJavaCollection, xj.length).toSeq.map(_.asInstanceOf[Double])),sampler.nextSample(V.asJavaCollection, V.length).toSeq.map(_.asInstanceOf[Double]),tau)
     }.toArray)
     (res, sigma)
   }
 
-  def psiWithStd(X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double) =
+  def psiWithStd(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double) =
     measureBootstrapped(psi, X, V, tau, nbootstraps)
 
   /**
@@ -92,7 +99,7 @@ object Statistics {
    * @param tau
    * @return
    */
-  def delta(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
+  def delta(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1): Double = {
     val v = V.dropRight(tau)
     val x = X.map(_.dropRight(tau))
     val xlagged = X.map(_.drop(tau))
@@ -101,7 +108,7 @@ object Statistics {
     }.max
   }
 
-  def deltaWithStd(X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double)=
+  def deltaWithStd(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double)=
     measureBootstrapped(delta, X, V, tau, nbootstraps)
 
   /**
@@ -111,12 +118,12 @@ object Statistics {
    * @param tau
    * @return
    */
-  def gamma(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
+  def gamma(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1): Double = {
     val v = V.dropRight(tau)
     X.map(xj => mutualInformation(v, xj.drop(tau))).max
   }
 
-  def gammaWithStd(X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double)=
+  def gammaWithStd(X: Seq[Seq[Double]], V: Seq[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double)=
     measureBootstrapped(gamma, X, V, tau, nbootstraps)
 
 }

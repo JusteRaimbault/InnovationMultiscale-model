@@ -51,9 +51,28 @@ object ScaleCoupling {
 
   /**
    * macro -> meso
+   *   rel delta pop: deltaP / max(delta P)
+   *
+   *   with genome/utilities? ~ hypothesis more difficult to interpret
    */
-  def macroToMesoUpdateMeso(mesoAfterCycle: Seq[Seq[MesoState]], mesoModels: Seq[MesoInnovationCluster], macroState: MacroState): Seq[(MesoInnovationCluster, Seq[MesoState])] = {
-
+  def macroToMesoUpdateMeso(
+                             mesoAfterCycle: Seq[Seq[MesoState]],
+                             mesoModels: Seq[MesoInnovationCluster],
+                             //previousMacroState: MacroState,// not needed - all pop in Matrix
+                             macroState: MacroState,
+                             macroToMesoCrossoverMaxUpdate: Double,
+                             macroToMesoMutationMaxUpdate: Double,
+                             macroToMesoExchangeMaxUpdate: Double
+                           ): Seq[(MesoInnovationCluster, Seq[MesoState])] = {
+    val deltaPops = (macroState.populations.getCol(macroState.time)- macroState.populations.getCol(macroState.time-1)).flatValues
+    val deltaPopMax = deltaPops.max
+    val relDeltaPop = deltaPops.map(_ / deltaPopMax)
+    val updatedMesoModels = mesoModels.zip(relDeltaPop).map{case (m,delta) =>
+      m.copy(crossOverProba = m.crossOverProba*(1+macroToMesoCrossoverMaxUpdate*delta),
+        mutationProba=m.mutationProba*(1+macroToMesoMutationMaxUpdate*delta),
+        interactionProba=m.interactionProba*(1+macroToMesoExchangeMaxUpdate*delta)
+      )
+    }
     mesoModels.zip(mesoAfterCycle)
   }
 

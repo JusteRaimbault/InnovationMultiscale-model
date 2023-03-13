@@ -29,7 +29,10 @@ case class InnovationMultiscale(
                                mesoCurrentProductShare: Double,
                                mesoInteractionProba: Double,
                                mesoDistanceDecay: Double,
-                               mesoToMacroInnovationThreshold: Double
+                               mesoToMacroInnovationThreshold: Double,
+                               macroToMesoCrossoverMaxUpdate: Double,
+                               macroToMesoMutationMaxUpdate: Double,
+                               macroToMesoExchangeMaxUpdate: Double
                                ) {
   def run: Result = InnovationMultiscale.run(this)
 }
@@ -80,7 +83,9 @@ object InnovationMultiscale {
     val newMacroState = MacroUrbanEvolution.macroStep(state.macroModel, state.macroState, mesoToMacroInnovativeCities)
 
     // macro -> meso
-    val macroToMesoUpdateMeso: Seq[(MesoInnovationCluster, Seq[MesoState])] = ScaleCoupling.macroToMesoUpdateMeso(mesoAfterCycle._1, mesoAfterCycle._2, newMacroState)
+    val macroToMesoUpdateMeso: Seq[(MesoInnovationCluster, Seq[MesoState])] =
+      ScaleCoupling.macroToMesoUpdateMeso(mesoAfterCycle._1, mesoAfterCycle._2, newMacroState,
+        model.macroToMesoCrossoverMaxUpdate, model.macroToMesoMutationMaxUpdate, model.macroToMesoExchangeMaxUpdate)
 
     state.copy(
       time = state.time + 1,

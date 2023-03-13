@@ -6,22 +6,34 @@ case class Result(
                  states: Seq[State]
                  ){
 
-  def populations: Matrix = states.map(_.macroState).last.populations
-  def innovationShares: Seq[Matrix] = states.map(_.macroState).last.innovations
+  def populations: Matrix = {
+    val p = states.map(_.macroState).last.populations
+    p.getSubmat(0,0,p.nrows,p.ncols-1)
+  }
+  def innovationShares: Seq[Matrix] = {
+    val i = states.map(_.macroState).last.innovations
+    i.map(m => m.getSubmat(0,0,m.nrows,m.ncols-1))
+  }
   def innovationUtilities: Seq[Double] = states.map(_.macroState).last.utilities
 
 
-  def macroUtilities: Array[Double] = {
+  def macroUtilities: Seq[Double] = {
+    //println(populations.colSum.toSeq)
+    //println(innovationUtilities)
+    //println(innovationShares.map(_.colSum))
     val normPop = populations%*%DenseMatrix.diagonal(populations.colSum.map(1/_))
-    innovationShares.zip(innovationUtilities).map{case (m,u)=> (normPop*m*(u/m.ncols)).sum}.toArray
+    val perCityInnovTimeavg: Seq[Seq[Double]] = innovationShares.zip(innovationUtilities).map{case (m,u)=> (normPop*m*(u/m.ncols)).colSum.toSeq}
+    perCityInnovTimeavg.transpose.map(c => c.sum / c.length.toDouble)
   }
 
   def averageMacroUtility: Double = macroUtilities.sum
 
-  def macroDiversities: Array[Double] = {
+  def macroDiversities: Seq[Double] = {
     def arraySum(a1: Array[Double], a2: Array[Double]): Array[Double] = a1.zip(a2).map{case (x1,x2)=> x1+x2}
     val normPop =populations%*%DenseMatrix.diagonal(populations.colSum.map(1/_))
-    innovationShares.map(m => (normPop*m).map(x => x*x).colSum).reduceLeft(arraySum).map(1 - _)
+    val perCityInnovTimeDiversity = innovationShares.map(m => (normPop*m).map(x => x*x).colSum.map(1 - _).toSeq)
+      //.reduceLeft(arraySum).map(1 - _).toSeq
+    perCityInnovTimeDiversity.transpose.map(c => c.sum / c.length.toDouble)
   }
 
   def averageMacroDiversity: Double = {
@@ -47,9 +59,12 @@ case class Result(
    * meso ts at macro time steps, for all indics and all cities
    * @return
    */
-  def mesoTimeSeries: Array[Array[Double]] =
-    states.map(_.mesoStates.map(MesoResult(_).productDiversities.last)).transpose.map(_.toArray).toArray++
-    states.map(_.mesoStates.map(MesoResult(_).bestFitnesses.last)).transpose.map(_.toArray).toArray
+  def mesoTimeSeries: Seq[Seq[Double]] = {
+    val divs = states.map(_.mesoStates.map(MesoResult(_).productDiversities.last))
+    //println(s"${divs.length}x${divs.head.length}")
+    divs.transpose++
+    states.map(_.mesoStates.map(MesoResult(_).bestFitnesses.last)).transpose
+  }
 
 }
 
