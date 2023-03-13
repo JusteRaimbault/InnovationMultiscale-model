@@ -36,7 +36,7 @@ object RunModel extends App {
     mesoToMacroInnovationThreshold = 1.0,
     macroToMesoCrossoverMaxUpdate = 0.01,
     macroToMesoMutationMaxUpdate = 0.001,
-    macroToMesoExchangeMaxUpdate =  -0.00001
+    macroToMesoExchangeMaxUpdate =  -0.000001
   )
 
   val result = model.run
