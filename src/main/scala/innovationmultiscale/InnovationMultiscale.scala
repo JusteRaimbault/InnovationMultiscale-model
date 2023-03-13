@@ -1,7 +1,16 @@
 package innovationmultiscale
 
-case class InnovationMultiscale()
+case class InnovationMultiscale(
+                               seed: Long
+                               )
 
 
 
-object InnovationMultiscale
+object InnovationMultiscale {
+
+  def setup(model: InnovationMultiscale): State = {
+    val initialMacroState = MacroUrbanEvolution.setup()
+    State(0)
+  }
+
+}

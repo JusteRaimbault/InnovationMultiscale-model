@@ -189,6 +189,9 @@ object MesoInnovationCluster {
     MesoState(firms, 0.0, 0)
   }
 
+  def setupCycle(): MesoState = {
+
+  }
 
 
   def mesoStep(state: MesoState, model: MesoInnovationCluster)(implicit rng: Random): MesoState = {
@@ -205,12 +208,11 @@ object MesoInnovationCluster {
   }
 
 
-  def runMeso(model: MesoInnovationCluster)(implicit rng: Random): MesoResult = {
+  def mesoCycle(model: MesoInnovationCluster, previousCycleState: MesoState)(implicit rng: Random): Seq[MesoState] = {
     import model._
-    val initialState = setup(firmsNumber, largestFirmSize, firmSizeScaling, fitness)
+    val initialState = setupCycle()
     def f(s: MesoState): MesoState = mesoStep(s, model)
-    val states = Iterator.iterate(initialState)(f).takeWhile(_.time <= model.timeSteps).toSeq
-    MesoResult(states)
+    Iterator.iterate(initialState)(f).takeWhile(_.time <= model.timeSteps).toSeq
   }
 
 }
