@@ -58,10 +58,29 @@ object MacroUrbanEvolution {
 
     val totalpop = currentPopulations.sum
     val diagpops = DenseMatrix.diagonal(currentPopulations)*(1 / totalpop)
+    //println(s"diagpop: ${diagpops.nrows}x${diagpops.ncols}")
     diagpops %*% DenseMatrix.diagonal(technoFactor) %*% gravityDistanceWeights %*% diagpops
   }
 
-  def macroStep(model: MacroUrbanEvolution, state: MacroState): MacroState = {
+  def newInnovation(
+                     innovativeCities: Seq[Int],
+                     population: Seq[Double],
+                     utilities: Seq[Double],
+                     innovationShares: Seq[Seq[Double]],
+                     earlyAdoptersRate: Double,
+                     utilityStd: Double
+                        )(implicit rng: Random): (Boolean, Seq[Double], Seq[Seq[Double]]) = {
+    def drawUtility: Double =  utilities.sum/utilities.length - math.sqrt(utilityStd)*math.exp(0.25) + Stochastic.LogNormalDistribution(0.0,math.sqrt(math.log(utilityStd)+0.5)).draw
+    if (innovativeCities.isEmpty) (false, Seq.empty[Double], Seq.empty[Seq[Double]])
+    else {
+      val newUtilities = innovativeCities.map(_ => math.max(0.1,drawUtility))
+      val newShares = innovationShares.map(_.zipWithIndex.map{case (s,i) => if(innovativeCities.contains(i)) s * (1 - earlyAdoptersRate) else s})++
+        innovativeCities.map(i => Seq.tabulate(population.length)(j => if (j==i) earlyAdoptersRate else 0.0))
+      (true, newUtilities, newShares)
+    }
+  }
+
+  def macroStep(model: MacroUrbanEvolution, state: MacroState, innovativeCities: Seq[Int])(implicit rng: Random): MacroState = {
 
     import model._
     val gravityDistanceWeights = state.distanceMatrix.map { d => Math.exp(-d / gravityDecay) }
@@ -70,8 +89,8 @@ object MacroUrbanEvolution {
     val n = state.populations.nrows
     val p = state.populations.ncols
     val delta_t = 1.0
-    val totalpop = state.populations.sum
-    val currentPopulations = state.populations.flatValues
+    val totalpop = state.populations.getCol(state.time).sum
+    val currentPopulations = state.populations.getCol(state.time).flatValues
 
     val tmplevel: Array[Array[Double]] = state.innovations.zip(state.utilities).map{
       case (m,utility)=>
@@ -83,7 +102,7 @@ object MacroUrbanEvolution {
 
     val cumtmp: Array[Double] = tmplevel.foldLeft(Array.fill(n)(0.0)){case (a1,a2)=>a1.zip(a2).map{case(d1,d2)=>d1+d2}}
     val deltaci: Array[Array[Double]] = tmplevel.map{_.zip(cumtmp).map{case (d1,d2)=>d1 / d2}}
-    //utils.log("deltaci = "+deltaci.map(_.toSeq).toSeq)
+
     val diffusedInnovs = state.innovations.zip(deltaci).map{
       case (innovmat,cityprops)=>
         val r: Matrix = innovmat.asInstanceOf[RealMatrix].clone
@@ -110,12 +129,15 @@ object MacroUrbanEvolution {
           )
         )
       ).flatValues
+    val newPopMatrix = state.populations.asInstanceOf[RealMatrix].clone
+    newPopMatrix.setSubmatM(0,state.time+1, newPopulations.map(Array(_)))
 
     val currentInnovProps: Seq[Seq[Double]] = diffusedInnovs.map(_.getCol(state.time+1).flatValues.toSeq)
 
-    // FIXME this should come from the meso cycle
-    //val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) = model.newInnovation(newPopulations.toSeq, state.utilities.toSeq, currentInnovProps)
-    val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) = (false, Seq.empty[Double], Seq.empty[Seq[Double]])
+    //  innovative cities come from the meso cycle
+    val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) =
+      newInnovation(innovativeCities, newPopulations.toSeq, state.utilities.toSeq,
+        currentInnovProps, earlyAdoptersRate, utilityStd)
 
     val res = if (potentialInnovation._1){
       val newutilities = state.utilities ++ potentialInnovation._2
@@ -138,7 +160,7 @@ object MacroUrbanEvolution {
 
       state.copy(
         time = state.time + 1,
-        populations = Matrix(newPopulations, row = false)(Matrix.defaultImplementation),
+        populations = newPopMatrix,//Matrix(newPopulations, row = false)(Matrix.defaultImplementation),
         innovations = newInnovProp.toSeq++addInnovProp,
         utilities = newutilities,
         flows = potsgravity
@@ -146,7 +168,7 @@ object MacroUrbanEvolution {
 
     } else state.copy(
       time = state.time + 1,
-      populations = Matrix(newPopulations, row = false)(Matrix.defaultImplementation),
+      populations = newPopMatrix,//Matrix(newPopulations, row = false)(Matrix.defaultImplementation),
       innovations = diffusedInnovs,
       flows = potsgravity
     )

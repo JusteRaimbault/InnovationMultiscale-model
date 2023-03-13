@@ -5,9 +5,6 @@ import scala.util.Random
 import org.apache.commons.math3.random.RandomDataGenerator
 
 case class MesoInnovationCluster(
-                                  firmsNumber: Int,
-                                  largestFirmSize: Int,
-                                  firmSizeScaling: Double,
                                   genomeSize: Int,
                                   timeSteps: Int,
                                   crossOverProba: Double,
@@ -163,34 +160,33 @@ object MesoInnovationCluster {
   }
 
 
-
-
-
-
-  def setup(firmsNumber: Int, largestFirmSize: Int, firmSizeScaling: Double, fitness: Fitness)(implicit rng: Random): MesoState = {
-    // size of firms: rank size law
-    // FIXME rank-size globally
-    val sizes: Seq[Int] = (1 to firmsNumber).map(i => math.round(largestFirmSize.toDouble*math.pow(i.toDouble, -firmSizeScaling)).toInt)
-
-    println("Company sizes = "+sizes)
-
-    val employees: Seq[Employee] = (1 to sizes.sum).map{i =>
-      //Employee.randomEmployee(i, genome)
-      Employee(i, fitness.genome(rng))
-    }
-    val firms = Iterator.iterate((Seq.empty[Firm], employees, 0)){
+  /**
+   * setup one meso state given sizes
+   * @param sizes
+   * @param fitness
+   * @param rng
+   * @return
+   */
+  def setup(sizes: Seq[Int], fitness: Fitness)(implicit rng: Random): MesoState = {
+    val firmsNumber = sizes.size
+    val employees: Seq[Employee] = (1 to sizes.sum).map{i =>Employee(i, fitness.genome(rng))}
+    val res = Iterator.iterate((Seq.empty[Firm], employees, 0)){
       case (firms, employees, sizeIndex) =>
         val (newfirm, remainingEmployees) =  Firm.randomFirm(sizes(sizeIndex), employees, fitness)
         (firms++Seq(newfirm), remainingEmployees, sizeIndex+1)
-    }.takeWhile(_._3<firmsNumber).toSeq.last._1
-
-    //println(firms.map{_.employees.map(_.currentIdeas.size)})
-
+    }.takeWhile(_._1.size<firmsNumber).toSeq.last
+    val (lastFirm, _) = Firm.randomFirm(sizes.last, res._2, fitness)
+    val firms = res._1++Seq(lastFirm)
     MesoState(firms, 0.0, 0)
   }
 
-  def setupCycle(): MesoState = {
 
+  def setupCycle(states: Seq[MesoState], model: MesoInnovationCluster)(implicit rng: Random): (MesoState, MesoInnovationCluster) = {
+    val newmodel = model.copy(fitness = MesoInnovationCluster.randomGeneralizedRastrigin(model.genomeSize))
+    val sizes = states.last.firms.map(_.employees.size)
+    //println(sizes)
+    val newstate = setup(sizes, newmodel.fitness)
+    (newstate, newmodel)
   }
 
 
@@ -208,11 +204,17 @@ object MesoInnovationCluster {
   }
 
 
-  def mesoCycle(model: MesoInnovationCluster, previousCycleState: MesoState)(implicit rng: Random): Seq[MesoState] = {
-    import model._
-    val initialState = setupCycle()
-    def f(s: MesoState): MesoState = mesoStep(s, model)
-    Iterator.iterate(initialState)(f).takeWhile(_.time <= model.timeSteps).toSeq
+  /**
+   * one cycle for one innovation cluster
+   * @param model
+   * @param previousCycleStates
+   * @param rng
+   * @return
+   */
+  def mesoCycle(model: MesoInnovationCluster, previousCycleStates: Seq[MesoState])(implicit rng: Random): (Seq[MesoState], MesoInnovationCluster) = {
+    val (initialState, newmodel) = setupCycle(previousCycleStates, model)
+    def f(s: MesoState): MesoState = mesoStep(s, newmodel)
+    (Iterator.iterate(initialState)(f).takeWhile(_.time <= newmodel.timeSteps).toSeq, newmodel)
   }
 
 }

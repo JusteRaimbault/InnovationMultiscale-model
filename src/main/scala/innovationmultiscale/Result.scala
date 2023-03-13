@@ -1,9 +1,62 @@
 package innovationmultiscale
 
-case class Result()
+import innovationmultiscale.Result.MesoResult
+
+case class Result(
+                 states: Seq[State]
+                 ){
+
+  def populations: Matrix = states.map(_.macroState).last.populations
+  def innovationShares: Seq[Matrix] = states.map(_.macroState).last.innovations
+  def innovationUtilities: Seq[Double] = states.map(_.macroState).last.utilities
+
+
+  def macroUtilities: Array[Double] = {
+    val normPop = populations%*%DenseMatrix.diagonal(populations.colSum.map(1/_))
+    innovationShares.zip(innovationUtilities).map{case (m,u)=> (normPop*m*(u/m.ncols)).sum}.toArray
+  }
+
+  def averageMacroUtility: Double = macroUtilities.sum
+
+  def macroDiversities: Array[Double] = {
+    def arraySum(a1: Array[Double], a2: Array[Double]): Array[Double] = a1.zip(a2).map{case (x1,x2)=> x1+x2}
+    val normPop =populations%*%DenseMatrix.diagonal(populations.colSum.map(1/_))
+    innovationShares.map(m => (normPop*m).map(x => x*x).colSum).reduceLeft(arraySum).map(1 - _)
+  }
+
+  def averageMacroDiversity: Double = {
+    val divs = macroDiversities
+    divs.sum / divs.length.toDouble
+  }
+
+  def averageMacroInnovation: Double = {
+    innovationUtilities.length.toDouble/(populations.nrows.toDouble*populations.ncols.toDouble)
+  }
+
+  def averageMesoProductDiversity: Double = {
+    val alldiversities: Seq[Double] = states.flatMap(_.mesoStates.map(MesoResult(_).productDiversities.last))
+    alldiversities.sum / alldiversities.size.toDouble
+  }
+
+  def averageMesoBestFitness: Double = {
+    val allbestfitnesses: Seq[Double] = states.flatMap(_.mesoStates.map(MesoResult(_).bestFitnesses.last))
+    allbestfitnesses.sum / allbestfitnesses.size.toDouble
+  }
+
+  /**
+   * meso ts at macro time steps, for all indics and all cities
+   * @return
+   */
+  def mesoTimeSeries: Array[Array[Double]] =
+    states.map(_.mesoStates.map(MesoResult(_).productDiversities.last)).transpose.map(_.toArray).toArray++
+    states.map(_.mesoStates.map(MesoResult(_).bestFitnesses.last)).transpose.map(_.toArray).toArray
+
+}
 
 
 object Result {
+
+
 
   case class MesoResult(states: Seq[MesoState]){
 
