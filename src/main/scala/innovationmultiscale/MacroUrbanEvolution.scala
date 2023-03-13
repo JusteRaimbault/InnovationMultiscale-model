@@ -11,21 +11,19 @@ import innovationmultiscale.Matrix.MatrixImplementation
  *  - only log-normal distrib
  *  - innov emergence depends on the mesoscale -> param equivalent to mutationRate and newInnovationHierarchy are inter-scale parameters
  */
-case class MacroUrbanEvolution(syntheticCities: Int,
-                               syntheticHierarchy: Double,
-                               syntheticMaxPop: Double,
-                               distanceMatrix: Matrix,
-                               finalTime: Int,
-                               rng : Random,
-                               growthRate: Double,
-                               innovationWeight: Double,
-                               gravityDecay: Double,
-                               innovationDecay: Double,
-                               //mutationRate: Double,
-                               //newInnovationHierarchy: Double,
-                               earlyAdoptersRate: Double,
-                               utilityStd: Double,
-                               initialInnovationUtility: Double)
+case class MacroUrbanEvolution(
+                                syntheticCities: Int,
+                                syntheticHierarchy: Double,
+                                syntheticMaxPop: Double,
+                                finalTime: Int,
+                                growthRate: Double,
+                                innovationWeight: Double,
+                                gravityDecay: Double,
+                                innovationDecay: Double,
+                                earlyAdoptersRate: Double,
+                                utilityStd: Double,
+                                initialInnovationUtility: Double
+                              )
 
 
 object MacroUrbanEvolution {
@@ -45,7 +43,10 @@ object MacroUrbanEvolution {
     archaicTechno.setMSubmat(0, 0, Array.fill(populationMatrix.nrows)(Array(1.0)))
     innovationProportions.append(archaicTechno)
 
-    MacroState(0, populationMatrix, innovationProportions.toSeq, innovationUtilities.toSeq, dmat)
+    val gravityDistanceWeights = dmat.map { d => Math.exp(-d / gravityDecay) }
+    val potsgravity = gravityPotentials(innovationProportions.toSeq, Array(1.0), populationMatrix.getCol(0).flatValues, gravityDistanceWeights, 0)
+
+    MacroState(0, populationMatrix, innovationProportions.toSeq, innovationUtilities.toSeq, dmat, potsgravity)
   }
 
 
@@ -114,7 +115,7 @@ object MacroUrbanEvolution {
 
     // FIXME this should come from the meso cycle
     //val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) = model.newInnovation(newPopulations.toSeq, state.utilities.toSeq, currentInnovProps)
-    val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) = (true, Seq.empty, Seq.empty)
+    val potentialInnovation: (Boolean, Seq[Double], Seq[Seq[Double]]) = (false, Seq.empty[Double], Seq.empty[Seq[Double]])
 
     val res = if (potentialInnovation._1){
       val newutilities = state.utilities ++ potentialInnovation._2

@@ -47,12 +47,25 @@ object Statistics {
     (simpleRegression.getSlope, simpleRegression.getRSquare)
   }
 
+  /**
+   * ex https://github.com/jlizier/jidt/wiki/SimpleJavaExamples#example-6---late-binding-mutual-info-calculator
+   * @param X
+   * @param Y
+   * @return
+   */
   def mutualInformation(X: Array[Double], Y: Array[Double]): Double = {
     val calculator = new MutualInfoCalculatorMultiVariateKraskov1()
     calculator.setObservations(X,Y)
     calculator.computeAverageLocalOfObservations()
   }
 
+  /**
+   * psi > 0 for causal emergence
+   * @param X
+   * @param V
+   * @param tau
+   * @return
+   */
   def psi(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
     val v = V.dropRight(tau)
     val vlagged = V.drop(tau)
@@ -72,6 +85,13 @@ object Statistics {
   def psiWithStd(X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double) =
     measureBootstrapped(psi, X, V, tau, nbootstraps)
 
+  /**
+   * delta > 0 for downward causation
+   * @param X
+   * @param V
+   * @param tau
+   * @return
+   */
   def delta(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
     val v = V.dropRight(tau)
     val x = X.map(_.dropRight(tau))
@@ -84,6 +104,13 @@ object Statistics {
   def deltaWithStd(X: Array[Array[Double]], V: Array[Double], tau: Int = 1, nbootstraps: Int = 100)(implicit rng: Random): (Double, Double)=
     measureBootstrapped(delta, X, V, tau, nbootstraps)
 
+  /**
+   * gamma = 0 and psi > 0 for causal decoupling
+   * @param X
+   * @param V
+   * @param tau
+   * @return
+   */
   def gamma(X: Array[Array[Double]], V: Array[Double], tau: Int = 1): Double = {
     val v = V.dropRight(tau)
     X.map(xj => mutualInformation(v, xj.drop(tau))).max
