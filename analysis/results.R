@@ -15,7 +15,8 @@ indics<-c("macroDiversity", "macroInnovation", "macroUtility", "mesoDiversity", 
   "deltaDiversity","deltaUtility","gammaDiversity","gammaUtility","psiUtility","psiDiversity")
 # todo: indics std
 
-resprefix = '20230313_232838_EXPLORATION'
+#resprefix = '20230313_232838_EXPLORATION'
+resprefix = '20230509_175143_EXPLORATION'
 resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/',resprefix,'/');dir.create(resdir,recursive = T)
 
 res <- read_csv(file=paste0('exploration/',resprefix,'.csv'))

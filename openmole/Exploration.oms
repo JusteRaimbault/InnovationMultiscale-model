@@ -94,21 +94,21 @@ val model = ScalaTask("""
   )
 )
 
-//val purpose = "EXPLORATION"
-val purpose = "STOCHASTICITY"
+val purpose = "EXPLORATION"
+//val purpose = "STOCHASTICITY"
 //val purpose = "TEST"
 
 val resfilename = ((new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")).format(new java.util.Date()))+"_"+purpose+".csv"
 val indics_hook = CSVHook(workDirectory / "exploration" / resfilename,arrayOnRow=true)
 
-val env = LocalEnvironment(5)
+val env = LocalEnvironment(12)
 //val env = EGIEnvironment("vo.complex-systems.eu")
 
 DirectSampling(
     //evaluation = (model on env by 1000 hook indics_hook),
     evaluation = (model on env hook indics_hook),
     sampling = (
-        LHS(sample = 10,
+        /*LHS(sample = 10,
             factor = Seq(
                 macroGravityDecay in (0.1,2.0),
                 macroInnovationDecay in (0.1,2.0),
@@ -120,18 +120,17 @@ DirectSampling(
                 macroToMesoMutationMaxUpdate in (-0.005,0.005),
                 macroToMesoExchangeMaxUpdate in (-0.00001,0.00001)
                 )
-            )
-          /* (macroGravityDecay in Seq(0.1,0.5,1.1))
-          x (macroInnovationDecay in Seq(0.1,0.5,1.1))
+            )*/
+          (macroGravityDecay in Seq(0.1,0.3,0.5,0.7,0.9,1.1))
+          x (macroInnovationDecay in Seq(0.1,0.3,0.5,0.7,0.9,1.1))
           x (mesoCrossOverProba in Seq(0.25,0.5))
           x (mesoMutationProba is 0.01)
-          x (mesoInteractionProba in Seq(0.0000001,,0.0001))
+          x (mesoInteractionProba is 0.00001)
           x (mesoToMacroInnovationThreshold in Seq(1.0,2.0))
           x (macroToMesoCrossoverMaxUpdate is 0.0)
           x (macroToMesoMutationMaxUpdate is 0.0)
           x (macroToMesoExchangeMaxUpdate in Seq(-0.00001,0.00001))
-          */
-     withIndex id ) x (replication in UniformDistribution[Long]() take 50)
+     withIndex id ) x (replication in UniformDistribution[Long]() take 20)
 )
 
 
