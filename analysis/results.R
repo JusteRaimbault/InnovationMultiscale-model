@@ -49,10 +49,14 @@ summary(reldistance("meanmesoFitness","sdmesoFitness"))
 
 # indicator plots
 sres = res %>% group_by(mesoCrossOverProba,macroGravityDecay,macroInnovationDecay,mesoToMacroInnovationThreshold,macroToMesoExchangeMaxUpdate)%>%
-  summarise(macroDiversity=mean(macroDiversity), macroInnovation=mean(macroInnovation),
-  macroUtility=mean(macroUtility), mesoDiversity=mean(mesoDiversity), mesoFitness=mean(mesoFitness),
-  deltaDiversity=mean(deltaDiversity),deltaUtility=mean(deltaUtility),gammaDiversity=mean(gammaDiversity),gammaUtility=mean(gammaUtility),psiUtility=mean(psiUtility),psiDiversity=mean(psiDiversity))
-
+#  summarise(macroDiversity=mean(macroDiversity), macroInnovation=mean(macroInnovation),
+#  macroUtility=mean(macroUtility), mesoDiversity=mean(mesoDiversity), mesoFitness=mean(mesoFitness),
+#  deltaDiversity=mean(deltaDiversity),deltaUtility=mean(deltaUtility),gammaDiversity=mean(gammaDiversity),gammaUtility=mean(gammaUtility),psiUtility=mean(psiUtility),psiDiversity=mean(psiDiversity))
+  summarise(macroDiversity=median(macroDiversity), macroInnovation=median(macroInnovation),
+    macroUtility=median(macroUtility), mesoDiversity=median(mesoDiversity), mesoFitness=median(mesoFitness),
+    deltaDiversity=median(deltaDiversity),deltaUtility=median(deltaUtility),gammaDiversity=median(gammaDiversity),gammaUtility=median(gammaUtility),psiUtility=median(psiUtility),psiDiversity=median(psiDiversity))
+            
+  
 for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
   for (indic in indics){
     ggsave(
@@ -60,8 +64,9 @@ for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
              aes_string(x = "macroGravityDecay", y=indic, color = "macroInnovationDecay", group="macroInnovationDecay" ))+
         geom_line()+facet_grid(mesoToMacroInnovationThreshold~macroToMesoExchangeMaxUpdate,scales = 'free')+
         scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(indic)+stdtheme
-      ,filename = paste0(resdir,indic,'-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm'
-    )
+ #     ,filename = paste0(resdir,indic,'-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm'
+ ,filename = paste0(resdir,indic,'_MED-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm'
+     )
   }
 }
 
