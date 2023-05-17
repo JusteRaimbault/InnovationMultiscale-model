@@ -15,9 +15,12 @@ indics<-c("macroDiversity", "macroInnovation", "macroUtility", "mesoDiversity", 
   "deltaDiversity","deltaUtility","gammaDiversity","gammaUtility","psiUtility","psiDiversity")
 # todo: indics std
 
+# explo
 #resprefix = '20230313_232838_EXPLORATION'
+
+# stochasticity
 resprefix = '20230509_175143_EXPLORATION'
-resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/',resprefix,'/');dir.create(resdir,recursive = T)
+resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/exploration/',resprefix,'/');dir.create(resdir,recursive = T)
 
 res <- read_csv(file=paste0('exploration/',resprefix,'.csv'))
 
@@ -27,7 +30,8 @@ sres = res %>% group_by(id) %>% summarise(
   sdmacroInnovation=sd(macroInnovation),meanmacroInnovation=mean(macroInnovation),sharpemacroInnovation=abs(meanmacroInnovation/sdmacroInnovation),
   sdmacroUtility=sd(macroUtility),meanmacroUtility=mean(macroUtility),sharpemacroUtility=abs(meanmacroUtility/sdmacroUtility),
   sdmesoDiversity=sd(mesoDiversity),meanmesoDiversity=mean(mesoDiversity),sharpemesoDiversity=abs(meanmesoDiversity/sdmesoDiversity),
-  sdmesoFitness=sd(mesoFitness),meanmesoFitness=mean(mesoFitness),sharpemesoFitness=abs(meanmesoFitness/sdmesoFitness)
+  sdmesoFitness=sd(mesoFitness),meanmesoFitness=mean(mesoFitness),sharpemesoFitness=abs(meanmesoFitness/sdmesoFitness),
+  count=n()
 )
 summary(sres)
 
@@ -64,7 +68,8 @@ for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
 
 # optimisation
 
-res <- read_csv(file=paste0('optimisation/20230314_084145_OPTIMISATION/population2851.csv'),col_names = T)
+#res <- read_csv(file=paste0('optimisation/20230314_084145_OPTIMISATION/population2851.csv'),col_names = T)
+res <- read_csv(file=paste0('optimisation/20230314_084145_OPTIMISATION/population10000.csv'),col_names = T)
 resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/optimisation/20230314_084145_OPTIMISATION/');dir.create(resdir,recursive = T)
 
 
@@ -76,7 +81,9 @@ ggsave(filename = paste0(resdir,"paretoDiversity-Fitness_colordG_sizetheta.png")
 
 # pse
 
-res <- read_csv(file=paste0('pse/20230314_084046_PSE/population138.csv'),col_names = T)
+#res <- read_csv(file=paste0('pse/20230314_084046_PSE/population138.csv'),col_names = T)
+res <- read_csv(file=paste0('pse/20230314_084046_PSE/population10000.csv'),col_names = T)
+
 resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/pse/20230314_084046_PSE/');dir.create(resdir,recursive = T)
 
 
