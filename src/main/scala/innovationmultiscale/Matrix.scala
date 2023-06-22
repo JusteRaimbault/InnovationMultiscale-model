@@ -314,9 +314,9 @@ case class RealMatrix(m: linear.RealMatrix) extends DenseMatrix {
   override def values: Array[Array[Double]] = m.getData
 
   def dispatchOp(op: RealMatrix => RealMatrix): Matrix => Matrix = {
-    m2: Matrix => m2 match {
+    (m2: Matrix) => m2 match {
       case m2: RealMatrix => op(m2)
-      case _ => throw new UnsupportedOperationException("Matrix implementations combination not supported")
+      //case _ => throw new UnsupportedOperationException("Matrix implementations combination not supported")
     }
   }
 
