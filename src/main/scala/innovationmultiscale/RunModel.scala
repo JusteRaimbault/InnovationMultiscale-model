@@ -4,7 +4,7 @@ import scala.util.Random
 
 object RunModel extends App {
 
-  val rng: Random = new Random()
+  implicit val rng: Random = new Random(-321205711823065277L)
 
   val model = InnovationMultiscale(
     seed = rng.nextLong(),
@@ -19,24 +19,24 @@ object RunModel extends App {
     setupLargestFirmSizeScaling = 1.0,
     macroGrowthRate = 0.0,
     macroInnovationWeight = 0.01,
-    macroGravityDecay = 0.5,
-    macroInnovationDecay = 0.3,
+    macroGravityDecay = 1.3795281566068684, //0.5,
+    macroInnovationDecay = 0.16853768774991962,//0.3,
     macroEarlyAdoptersRate = 0.2,
     macroUtilityStd = 1.0,
     macroInitialInnovationUtility = 1.0,
     mesoGenomeSize = 10,
     mesoTimeSteps = 50,
-    mesoCrossOverProba = 0.2,
+    mesoCrossOverProba = 0.45856194578200593, //0.2,
     mesoCrossOverShare = 0.5,
-    mesoMutationProba = 0.01,
+    mesoMutationProba = 0.0140402580242525,//0.01,
     mesoMutationAmplitude = 1.0,
     mesoCurrentProductShare = 0.5,
-    mesoInteractionProba = 0.00001,
+    mesoInteractionProba = 3.6737422483846687E-4, //0.00001,
     mesoDistanceDecay = 100.0,
-    mesoToMacroInnovationThreshold = 1.0,
-    macroToMesoCrossoverMaxUpdate = 0.01,
-    macroToMesoMutationMaxUpdate = 0.001,
-    macroToMesoExchangeMaxUpdate =  -0.000001
+    mesoToMacroInnovationThreshold = 0.5278097884618509, //1.0,
+    macroToMesoCrossoverMaxUpdate = 0.07408628672836537, //0.01,
+    macroToMesoMutationMaxUpdate = -0.0028233692434233197, //0.001,
+    macroToMesoExchangeMaxUpdate =  -4.4293819183259935E-6//-0.000001
   )
 
   val result = model.run
