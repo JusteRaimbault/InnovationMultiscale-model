@@ -101,14 +101,14 @@ val purpose = "EXPLORATION"
 val resfilename = ((new java.text.SimpleDateFormat("yyyyMMdd_HHmmss")).format(new java.util.Date()))+"_"+purpose+".csv"
 val indics_hook = CSVHook(workDirectory / "exploration" / resfilename,arrayOnRow=true)
 
-val env = LocalEnvironment(12)
-//val env = EGIEnvironment("vo.complex-systems.eu")
+//val env = LocalEnvironment(12)
+val env = EGIEnvironment("vo.complex-systems.eu")
 
 DirectSampling(
     //evaluation = (model on env by 1000 hook indics_hook),
-    evaluation = (model on env hook indics_hook),
+    evaluation = (model on env by 10 hook indics_hook),
     sampling = (
-        /*LHS(sample = 10,
+      /*  LHS(sample = 50,
             factor = Seq(
                 macroGravityDecay in (0.1,2.0),
                 macroInnovationDecay in (0.1,2.0),
@@ -121,16 +121,16 @@ DirectSampling(
                 macroToMesoExchangeMaxUpdate in (-0.00001,0.00001)
                 )
             )*/
-          (macroGravityDecay in Seq(0.1,0.3,0.5,0.7,0.9,1.1))
-          x (macroInnovationDecay in Seq(0.1,0.3,0.5,0.7,0.9,1.1))
-          x (mesoCrossOverProba in Seq(0.25,0.5))
+          (macroGravityDecay in (0.1 to 1.5 by 0.2))
+          x (macroInnovationDecay in (0.1 to 1.5 by 0.2))
+          x (mesoCrossOverProba is 0.5) //in Seq(0.25,0.5))
           x (mesoMutationProba is 0.01)
           x (mesoInteractionProba is 0.00001)
-          x (mesoToMacroInnovationThreshold in Seq(1.0,2.0))
+          x (mesoToMacroInnovationThreshold in Seq(0.1,10.0))
           x (macroToMesoCrossoverMaxUpdate is 0.0)
           x (macroToMesoMutationMaxUpdate is 0.0)
-          x (macroToMesoExchangeMaxUpdate in Seq(-0.00001,0.00001))
-     withIndex id ) x (replication in UniformDistribution[Long]() take 20)
+          x (macroToMesoExchangeMaxUpdate in Seq(-0.001,0.001))
+     withIndex id ) x (replication in UniformDistribution[Long]() take 10000)
 )
 
 
