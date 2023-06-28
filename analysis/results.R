@@ -17,7 +17,8 @@ indics<-c("macroDiversity", "macroInnovation", "macroUtility", "mesoDiversity", 
 
 # explo
 #resprefix = '20230313_232838_EXPLORATION'
-resprefix = '20230626_074351_EXPLORATION'
+#resprefix = '20230626_074351_EXPLORATION'
+resprefix = '20230627_163658_EXPLORATION'
 
 # stochasticity
 #resprefix = '20230509_175143_EXPLORATION'
@@ -73,7 +74,7 @@ for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
       ggplot(sres[sres$mesoCrossOverProba==mesoCrossOverProba,],
              aes_string(x = "macroGravityDecay", y=paste0(indic,'Med'), color = "macroInnovationDecay", group="macroInnovationDecay" ))+
         geom_line()+facet_grid(mesoToMacroInnovationThreshold~macroToMesoExchangeMaxUpdate,scales = 'free')+
-        scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(indic)+stdtheme
+        scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(paste0(indic," (median)"))+stdtheme
       ,filename = paste0(resdir,indic,'_MED-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm')
   }
 }
