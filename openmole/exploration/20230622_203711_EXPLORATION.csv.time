@@ -1,0 +1,44 @@
+22/06/2023, 22:37:08 ; 15:29:32, running 1, completed 49999/50000, Running -> stop 23/06 14h07
+EGI : 1m7d14h, up 306.88M, down 306.88M, submitted 2, running 4, finished 50370, failed 1522, errors 200+
+local finished 199999
+
+[ error -> test local (commited):
+
+Caused by: org.openmole.core.exception.InternalProcessingError: Error in model@1687726284 for context values {id=4, macroGravityDecay=1.3795281566068684, macroInnovationDecay=0.16853768774991962, macroToMesoCrossoverMaxUpdate=0.07408628672836537, macroToMesoExchangeMaxUpdate=-4.4293819183259935E-6, macroToMesoMutationMaxUpdate=-0.0028233692434233197, mesoCrossOverProba=0.45856194578200593, mesoInteractionProba=3.6737422483846687E-4, mesoMutationProba=0.0140402580242525, mesoToMacroInnovationThreshold=0.5278097884618509, openmole$seed=4104968829943241883, replication=-321205711823065277}
+	at org.openmole.core.workflow.tools.InputOutputCheck$.perform$$anonfun$1(InputOutputCheck.scala:111)
+	at org.openmole.core.expansion.FromContext.apply(FromContext.scala:249)
+	at org.openmole.core.expansion.FromContext.from(FromContext.scala:252)
+	at org.openmole.core.workflow.task.Task$.perform(Task.scala:229)
+	at org.openmole.core.workflow.job.Job.perform(Job.scala:101)
+	at org.openmole.core.workflow.execution.LocalExecutor.$anonfun$1$$anonfun$1(LocalExecutor.scala:72)
+	at scala.collection.ArrayOps$.foreach$extension(ArrayOps.scala:1321)
+	at org.openmole.core.workflow.execution.LocalExecutor.$anonfun$1(LocalExecutor.scala:91)
+	at org.openmole.core.workflow.execution.LocalExecutor.withRedirectedOutput(LocalExecutor.scala:134)
+	at org.openmole.core.workflow.execution.LocalExecutor.run(LocalExecutor.scala:95)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.lang.ArrayIndexOutOfBoundsException: Index 49 out of bounds for length 49
+	at infodynamics.utils.KdTree.constructKdTree(Unknown Source)
+	at infodynamics.utils.KdTree.<init>(Unknown Source)
+	at infodynamics.measures.continuous.kraskov.MutualInfoCalculatorMultiVariateKraskov.ensureKdTreesConstructed(Unknown Source)
+	at infodynamics.measures.continuous.kraskov.MutualInfoCalculatorMultiVariateKraskov.computeFromObservations(Unknown Source)
+	at infodynamics.measures.continuous.kraskov.MutualInfoCalculatorMultiVariateKraskov.computeAverageLocalOfObservations(Unknown Source)
+	at innovationmultiscale.Statistics$.mutualInformation(Statistics.scala:60)
+	at innovationmultiscale.Statistics$.psi(Statistics.scala:75)
+	at innovationmultiscale.Statistics$.psiWithStd$$anonfun$1(Statistics.scala:93)
+	at innovationmultiscale.Statistics$.psiWithStd$$anonfun$adapted$1(Statistics.scala:93)
+	at innovationmultiscale.Statistics$.measureBootstrapped(Statistics.scala:83)
+	at innovationmultiscale.Statistics$.psiWithStd(Statistics.scala:93)
+	at rs$line$1$$anon$1.apply(rs$line$1:59)
+	at rs$line$1$$anon$1.apply(rs$line$1:5)
+	at org.openmole.core.expansion.ScalaCompilation$.static$$anonfun$1(ScalaCompilation.scala:225)
+	at org.openmole.core.expansion.ScalaCompilation$ContextClosure.apply(ScalaCompilation.scala:231)
+	at org.openmole.plugin.task.scala.ScalaTask.processCode$1$$anonfun$1(ScalaTask.scala:116)
+	at org.openmole.core.expansion.FromContext.apply(FromContext.scala:249)
+	at org.openmole.plugin.task.scala.JVMLanguageTask$.process$$anonfun$1$$anonfun$1(JVMLanguageTask.scala:37)
+	at org.openmole.core.workspace.TmpDirectory.withTmpDir(TmpDirectory.scala:38)
+	at org.openmole.plugin.task.scala.JVMLanguageTask$.process$$anonfun$1(JVMLanguageTask.scala:39)
+	at org.openmole.core.expansion.FromContext.apply(FromContext.scala:249)
+	at org.openmole.core.expansion.FromContext.from(FromContext.scala:252)
+	at org.openmole.core.workflow.tools.InputOutputCheck$.perform$$anonfun$1(InputOutputCheck.scala:108)
+	... 10 more
+

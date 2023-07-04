@@ -54,7 +54,7 @@ object Statistics {
    * @return
    */
   def mutualInformation(X: Seq[Double], Y: Seq[Double]): Double = {
-    //println(s"I: |X|=${X.length}, |Y|=${Y.length}")
+    println(s"I: |X|=${X.length}, |Y|=${Y.length}")
     val calculator = new MutualInfoCalculatorMultiVariateKraskov1()
     calculator.setObservations(X.toArray,Y.toArray)
     calculator.computeAverageLocalOfObservations()
