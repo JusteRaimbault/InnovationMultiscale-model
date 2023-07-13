@@ -17,15 +17,21 @@ indics<-c("macroDiversity", "macroInnovation", "macroUtility", "mesoDiversity", 
 
 # explo
 #resprefix = '20230313_232838_EXPLORATION'
+#resprefix = '20230623_135234_EXPLORATION'
 #resprefix = '20230626_074351_EXPLORATION'
-resprefix = '20230627_163658_EXPLORATION'
+#resprefix = '20230627_163658_EXPLORATION'
+resprefixes = c('20230705_133148_EXPLORATION','20230706_104818_EXPLORATION','20230710_084540_EXPLORATION','20230710_184244_EXPLORATION',
+              '20230711_073812_EXPLORATION','20230712_102910_EXPLORATION','20230712_170904_EXPLORATION')
+resprefix = '20230705-20230712_EXPLORATION'
 
 # stochasticity
 #resprefix = '20230509_175143_EXPLORATION'
 
 resdir = paste0(Sys.getenv('CS_HOME'),'/UrbanEvolution/Results/InnovationMultiscale/exploration/',resprefix,'/');dir.create(resdir,recursive = T)
 
-res <- read_csv(file=paste0('exploration/',resprefix,'.csv'))
+res <- read_csv(file=paste0('exploration/',resprefixes[1],'.csv'))
+
+for(i in 2:length(resprefixes)){res=rbind(res,read_csv(file=paste0('exploration/',resprefixes[i],'.csv')))}
 
 # stochasticity
 sres = res %>% group_by(id) %>% summarise(
@@ -52,9 +58,9 @@ summary(reldistance("meanmesoFitness","sdmesoFitness"))
 
 # indicator plots
 sres = res %>% group_by(mesoCrossOverProba,macroGravityDecay,macroInnovationDecay,mesoToMacroInnovationThreshold,macroToMesoExchangeMaxUpdate)%>%
-  summarise(macroDiversity=mean(macroDiversity), macroInnovation=mean(macroInnovation),
-  macroUtility=mean(macroUtility), mesoDiversity=mean(mesoDiversity), mesoFitness=mean(mesoFitness),
-  deltaDiversity=mean(deltaDiversity),deltaUtility=mean(deltaUtility),gammaDiversity=mean(gammaDiversity),gammaUtility=mean(gammaUtility),psiUtility=mean(psiUtility),psiDiversity=mean(psiDiversity),
+  summarise(macroDiversityMean=mean(macroDiversity), macroInnovationMean=mean(macroInnovation),
+  macroUtilityMean=mean(macroUtility), mesoDiversityMean=mean(mesoDiversity), mesoFitnessMean=mean(mesoFitness),
+  deltaDiversityMean=mean(deltaDiversity),deltaUtilityMean=mean(deltaUtility),gammaDiversityMean=mean(gammaDiversity),gammaUtilityMean=mean(gammaUtility),psiUtilityMean=mean(psiUtility),psiDiversityMean=mean(psiDiversity),
   macroDiversityMed=median(macroDiversity), macroInnovationMed=median(macroInnovation),
   macroUtilityMed=median(macroUtility), mesoDiversityMed=median(mesoDiversity), mesoFitnessMed=median(mesoFitness),
   deltaDiversityMed=median(deltaDiversity),deltaUtilityMed=median(deltaUtility),gammaDiversityMed=median(gammaDiversity),gammaUtilityMed=median(gammaUtility),psiUtilityMed=median(psiUtility),psiDiversityMed=median(psiDiversity))
@@ -64,7 +70,7 @@ for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
   for (indic in indics){
     ggsave(
       ggplot(sres[sres$mesoCrossOverProba==mesoCrossOverProba,],
-             aes_string(x = "macroGravityDecay", y=indic, color = "macroInnovationDecay", group="macroInnovationDecay" ))+
+             aes_string(x = "macroGravityDecay", y=paste0(indic,'Mean'), color = "macroInnovationDecay", group="macroInnovationDecay" ))+
         geom_line()+facet_grid(mesoToMacroInnovationThreshold~macroToMesoExchangeMaxUpdate,scales = 'free')+
         scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(indic)+stdtheme
       ,filename = paste0(resdir,indic,'-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm')
@@ -74,7 +80,8 @@ for(mesoCrossOverProba in unique(sres$mesoCrossOverProba)){
       ggplot(sres[sres$mesoCrossOverProba==mesoCrossOverProba,],
              aes_string(x = "macroGravityDecay", y=paste0(indic,'Med'), color = "macroInnovationDecay", group="macroInnovationDecay" ))+
         geom_line()+facet_grid(mesoToMacroInnovationThreshold~macroToMesoExchangeMaxUpdate,scales = 'free')+
-        scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(paste0(indic," (median)"))+stdtheme
+        scale_colour_continuous(name=expression(d[I]))+xlab(expression(d[G]))+ylab(indic)+#ylab(paste0(indic," (median)"))+
+        stdtheme
       ,filename = paste0(resdir,indic,'_MED-macroGravityDecay_color-macroInnovationDecay_facet-mesoToMacroInnovationThreshold-macroToMesoExchangeMaxUpdate_mesoCrossOverProba',mesoCrossOverProba,'.png'),width=30,height=20,units='cm')
   }
 }
